@@ -1,0 +1,8 @@
+* To Do
+- remove duplicate CSV file, and encrypt the one I am using for meters
+- Use Pipeline explicitly for all transformations
+- Create unit tests for each transformation step
+- Save the notebook as a readable markdown format so that diff's make sense. This is just
+  a good practices I should be adopting.
+- Any way to cache this: ox.graph_from_place('Columbus, Ohio, USA'..) so it doesn't have
+  to grab this every time from remote location?

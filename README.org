@@ -1,0 +1,24 @@
+* CMH Parking insights
+** When and where?
+- issued the most or least?
+- is there a good or bad time of the day to park for < 30 minutes without getting a
+  ticket?
+- where are the most expensive or least expensive tickets given?
+** Are certain meters less likely to get checked?
+- zones that don't get tickets as much.. is it that enforcement is lax or are people more
+  likely to pay for parking?
+- if there's a regular pattern in how meters are checked, then perhaps some meters may be
+  very likely to not be checked for a period of time.
+** Is there any disparity in enforcement?
+- checking badge numbers.. are there patterns in how tickets are issued?
+** Enforcement and social status / neighborhood
+- Are rich or poor areas more or less likely to be checked?
+** Are there better ways to enforce parking?
+If there are patterns of poor enforcement, how can enforcement be made more even?
+** Other data sources?
+What else can be brought in to this?
+- If we know what events happened, when and where we may be able to correlate that with parking
+  violations?
+- Is there a way for someone to know where there's most likely to be available parking at
+  a particular time or location?  Not sure what data could be brought in to help with that..
+

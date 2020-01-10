@@ -37,6 +37,18 @@ webencodings = "*"
 
 [[package]]
 category = "main"
+description = "Generate complex HTML+JS pages with Python"
+name = "branca"
+optional = false
+python-versions = "*"
+version = "0.3.1"
+
+[package.dependencies]
+jinja2 = "*"
+six = "*"
+
+[[package]]
+category = "main"
 description = "Python package for providing Mozilla's CA Bundle."
 name = "certifi"
 optional = false
@@ -151,6 +163,20 @@ click-plugins = ">=1.0"
 cligj = ">=0.5"
 munch = "*"
 six = ">=1.7"
+
+[[package]]
+category = "main"
+description = "Make beautiful maps with Leaflet.js & Python"
+name = "folium"
+optional = false
+python-versions = ">=3.5"
+version = "0.10.1"
+
+[package.dependencies]
+branca = ">=0.3.0"
+jinja2 = ">=2.9"
+numpy = "*"
+requests = "*"
 
 [[package]]
 category = "main"
@@ -900,7 +926,7 @@ version = "0.6.0"
 more-itertools = "*"
 
 [metadata]
-content-hash = "9fe782ff1a78dc377cc9a21249a10f09f570b54cda4d81b7bba6180e5faf527b"
+content-hash = "65c02350a8c0948386845b650c371e8a35708135f310c9c1cf94115c1e6d2222"
 python-versions = "^3.7"
 
 [metadata.hashes]
@@ -908,6 +934,7 @@ appnope = ["5b26757dc6f79a3b7dc9fab95359328d5747fcb2409d331ea66d0272b90ab2a0", "
 attrs = ["08a96c641c3a74e44eb59afb61a24f2cb9f4d7188748e76ba4bb5edfa3cb7d1c", "f7b7ce16570fe9965acd6d30101a28f62fb4a7f9e926b3bbc9b61f8b04247e72"]
 backcall = ["38ecd85be2c1e78f77fd91700c76e14667dc21e2713b63876c0eb901196e01e4", "bbbf4b1e5cd2bdb08f915895b51081c041bac22394fdfcfdfbe9f14b77c08bf2"]
 bleach = ["213336e49e102af26d9cde77dd2d0397afabc5a6bf2fed985dc35b5d1e285a16", "3fdf7f77adcf649c9911387df51254b813185e32b2c6619f690b593a617e19fa"]
+branca = ["3e762c9bdf40725f3d05ea1fda8fae9b470bfada6474e43a1242c8204a7bb15e", "4d89048add9628d1f83a73c6482c116f6752580cc03d5fe09de0bdeb8e5a2158", "56e93dc6f65f4ff0169b5aac9e7db5c667da34c42b78d7f7bd0cb47af9de19e9"]
 certifi = ["017c25db2a153ce562900032d5bc68e9f191e44e9a0f762f373977de9df1fbb3", "25b64c7da4cd7479594d035c08c2d809eb4aab3a26e5a990ea98cc450c320f1f"]
 chardet = ["84ab92ed1c4d4f16916e05906b6b75a6c0fb5db821cc65e70cbd64a3e2a5eaae", "fc323ffcaeaed0e0a02bf4d117757b98aed530d9ed4531e3e15460124c106691"]
 click = ["2335065e6395b9e67ca716de5f7526736bfa6ceead690adf616d925bdc622b13", "5b94b49521f6456670fdb30cd82a4eca9412788a93fa6dd6df72c94d5a8ff2d7"]
@@ -920,6 +947,7 @@ defusedxml = ["6687150770438374ab581bb7a1b327a847dd9c5749e396102de3fad4e8a3ef93"
 descartes = ["135a502146af5ed6ff359975e2ebc5fa4b71b5432c355c2cafdc6dea1337035b", "4c62dc41109689d03e4b35de0a2bcbdeeb81047badc607c4415d5c753bd683af", "b7e412e7e6e294412f1d0f661f187babc970088c2456089e6801eebb043c2e1b"]
 entrypoints = ["589f874b313739ad35be6e0cd7efde2a4e9b6fea91edcc34e58ecbb8dbe56d19", "c70dd71abe5a8c85e55e12c19bd91ccfeec11a6e99044204511f9ed547d48451"]
 fiona = ["0742177422d20f72e69e499886f96e1cbf5ce0c9752f8320a05eddcb0f1c576a", "3104311faeb10dc80e00c46734a92275d67efabe1fd6e835fec8a6f77c0920bf", "5567efdba15eea935c581db94f3980ecbccecb4a7a5cd79651c8aed41c70a0fa", "5ec34898c8b983a723fb4e949dd3e0ed7e691c303e51f6bfd61e52ac9ac813ae", "5f39bdf39421d79c22ae0b4e0e1169820812941206446b2294e6ca40646708fc", "621d2230663f3fb95d60249e27fc8e2a6e456dc85f96bbfa9882a6b0a4ce0d1f", "83314cf2cbe50df24c290d241681964adf6fe9c0ba33a0a0f980a5f44008296b", "9347c2b8950575014ec233f6191e52d03ef68a5bb759a53a621b095610650a50", "976e91e056e818720510984970ec33f26b9744cdf52e586e08217bf34bfcb41e", "b771a58e6b93357096934fa26d65d0cf308345340d694e4d346d3b39879e265c", "f0adf55192ac715c1ac7a19ff1aacd667ffe251df0e09b9a6feeddce45849f17"]
+folium = ["a1ae5516752f775bf3442e50dc3575880945633a5ec5e0f3fcecb5c15b43d0fd", "edbf79d04345a75f8503fe6d071179806ee7e3baf81ae4f329b9f3ce8f118c3d"]
 geopandas = ["684b4f8b2452638f9f1d43aed6a44bf0638b739a403f19f8a74f3f9beef94e41", "692ff115c91937f43cad65bc5bba012059f8d968943ba85ba314a734bb727bc4"]
 idna = ["c357b3f628cf53ae2c4c05627ecc484553142ca23264e593d327bcde5e9c3407", "ea8b7f6188e6fa117537c3df7da9fc686d485087abf6ac197f9c46432f7e4a3c"]
 importlib-metadata = ["aa18d7378b00b40847790e7c27e11673d7fed219354109d0e7b9e5b25dc3ad26", "d5f18a79777f3aa179c145737780282e27b508fc8fd688cb17c7a813e8bd39af"]

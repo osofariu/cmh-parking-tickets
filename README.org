@@ -21,4 +21,6 @@ What else can be brought in to this?
   violations?
 - Is there a way for someone to know where there's most likely to be available parking at
   a particular time or location?  Not sure what data could be brought in to help with that..
-
+* OSX installation notes
+- It works with python 3.7.6.  When using python 3.8 had an issue when installing
+  scikit-learn, so sticking with 3.7 for now.

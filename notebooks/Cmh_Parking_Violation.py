@@ -458,16 +458,21 @@ destination_node = ox.get_nearest_node(G, destination_point)
 origin_node, destination_node
 
 # +
-route = nx.shortest_path(G, origin_node, destination_node, weight='length')
+# The plan is to plot a route between every visited parking meter, ordered by time to see the most likely
+# route taken.  To start with we are plotting a route between only the first and last visited points, to
+# get a hang of how to plot routes.
 
-# bbox = ox.core.bbox_from_point((39.966358, -83.001397), 800)
-# north, south, east, west = bbox
+bbox = ox.core.bbox_from_point((39.966358, -83.001397), 2500)
+north, south, east, west = bbox
 
-# G_temp_small = ox.graph_from_bbox(north, south, east, west, network_type='drive', simplify=False, retain_all=True)
+G_small2 = ox.graph_from_bbox(north, south, east, west, network_type='drive', simplify=False, retain_all=True)
+
+route = nx.shortest_path(G_small2, origin_node, destination_node, weight='length')
+
 
 # when plotting a route from a bounded box it fails.. something gets extracted, but it works with full map
 # projected = ox.project_graph(G_small)
-fig, ax = ox.plot_graph_route(G_small, route, origin_point=origin_point,
+fig, ax = ox.plot_graph_route(G_small2, route, origin_point=origin_point,
                               destination_point=destination_point, fig_height=15, show=False, close=False)
 
 # -

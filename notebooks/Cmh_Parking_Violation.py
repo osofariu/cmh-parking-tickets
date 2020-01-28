@@ -27,13 +27,17 @@
 # +
 # #%matplotlib inline
 
+import numpy as np
 import datetime
-import string
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import osmnx as ox
 import networkx as nx
+import folium
+from IPython.display import IFrame
+# to hash 'string' badge numbers to numeric so that we can encode them as colors
+import hashlib
 
 # -
 
@@ -49,8 +53,8 @@ import networkx as nx
 # This dataset covers years 2013 through 2018.
 
 violations = pd.read_csv("../data/raw/160c98a1-ad56-4658-8553-5ee8e7d0d953.csv.gz",
-                              compression='gzip',
-                              low_memory=False)
+                         compression='gzip',
+                         low_memory=False)
 
 pd.set_option('display.max_columns', None)
 violations.info()
@@ -82,17 +86,17 @@ meters = pd.read_csv("../data/raw/d9b11b8f-67f3-48c4-8831-0f22d93166ce")
 
 # work with the most promising columns:
 violations_columns_use = ['ticket', 'entity', 'meter', 'iss dt', 'due', 'fine', 'make', 'iss time',
-                            'badge', 'pay amt', 'lat', 'long']
+                          'badge', 'pay amt', 'lat', 'long']
 
 # extract date-related fields
 violations['issue_date'] = violations['iss dt'].map(lambda dt: datetime.datetime.strptime(str(dt), '%Y%j'))
 violations['year'] = violations['issue_date'].map(lambda dt: dt.year)
 violations['dayOfWeek'] = violations['issue_date'].map(lambda dt: dt.weekday())
-import numpy as np
+
 violations['hour'] = np.floor(violations['iss time'] / 100)
 
 # convert 'pay amt' and 'fine' into float datatype
-trans_dict ={ord('$'): None, ord('('): None, ord(')'): None, ord(","): None}
+trans_dict = {ord('$'): None, ord('('): None, ord(')'): None, ord(","): None}
 violations['amt_float'] = violations['pay amt'].str.translate(trans_dict).astype(float)
 violations['fine_float'] = violations['fine'].str.translate(trans_dict).astype(float)
 
@@ -101,7 +105,7 @@ computed_columns = ['issue_date', 'year', 'dayOfWeek', 'hour', 'amt_float', 'fin
 violations[violations_columns_use + computed_columns].head(10)
 
 # date columns
-violations[['iss dt', 'iss time', 'issue_date', 'year', 'dayOfWeek', 'hour' ]]
+print(violations[['iss dt', 'iss time', 'issue_date', 'year', 'dayOfWeek', 'hour']])
 
 # ## About fines
 
@@ -115,10 +119,10 @@ sns.distplot(violations[(violations['amt_float'] > 200) & (violations['amt_float
              ax=ax3)
 
 larger_amt = violations[(violations['amt_float'] >= 600)]
-larger_amt
+print(larger_amt)
 
 # +
-f, (ax1, ax2, ax3) = plt.subplots(1, 3, sharex=False, figsize=(20, 5))
+_, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(20, 5))
 
 sns.distplot(violations[violations['fine_float'] < 100]['fine_float'], bins=20, ax=ax1)
 sns.distplot(violations[(violations['fine_float'] >= 100) & (violations['fine_float'] < 200)]['fine_float'], bins=20,
@@ -139,9 +143,9 @@ print(entity_tickets.head(25))
 
 # #### distribution of fines
 
-f, ax1 = plt.subplots(1, 1, sharex=False, figsize=(20, 5))
-sns.distplot(entity_tickets[('fine_float', 'count')] \
-                 [(entity_tickets[('fine_float', 'count')] >= 25)], bins=50, ax=ax1)
+_, ax1 = plt.subplots(1, 1, figsize=(20, 5))
+sns.distplot(entity_tickets[('fine_float', 'count')]
+             [(entity_tickets[('fine_float', 'count')] >= 25)], bins=50, ax=ax1)
 
 # wonder why number of violations issued went down the last three years?
 violations['year'].value_counts()
@@ -170,7 +174,7 @@ agent_business.reset_index().sort_values('entity_count', ascending=False).head(2
 # -
 
 violations_clean = violations[['iss time', 'fine_float', 'dayOfWeek', 'hour', 'year']].dropna()
-#sns.pairplot(violations_clean)
+# sns.pairplot(violations_clean)
 
 # #### How many tickets are generally given each day?
 
@@ -232,17 +236,22 @@ violations_x_meters = violations.merge(meters, how='left', on='Meter')
 
 # TODO: make faster if possible.. vectorization?
 fudge = 0.2
-violations_x_meters['lat_combined'] = \
-    violations_x_meters.apply(lambda p: p['Lat'] if (p['Lat'] > cmh_s - fudge) & (p['Lat'] < cmh_n + fudge) \
-        else p['lat_float'], axis=1)
-violations_x_meters['long_combined'] = \
-    violations_x_meters.apply(lambda p: p['Long'] if (p['Long'] > cmh_w - fudge) & (p['Long'] < cmh_e + fudge) \
-        else p['long_float'], axis=1)
+violations_x_meters['lat_combined'] = violations_x_meters \
+    .apply(lambda p: p['Lat']
+if (p['Lat'] > cmh_s - fudge) & (p['Lat'] < cmh_n + fudge)
+else p['lat_float'], axis=1)
+
+violations_x_meters['long_combined'] = violations_x_meters \
+    .apply(lambda p: p['Long']
+if (p['Long'] > cmh_w - fudge) & (p['Long'] < cmh_e + fudge)
+else p['long_float'], axis=1)
+
 violations_x_meters.info()
 
 # only keep the records with an actual location
-violations_x_meters = violations_x_meters[(violations_x_meters['lat_combined'] > 0) & (violations_x_meters['long_combined'] < 0)]
-violations_x_meters.shape
+violations_x_meters = violations_x_meters[
+    (violations_x_meters['lat_combined'] > 0) & (violations_x_meters['long_combined'] < 0)]
+print(violations_x_meters.shape)
 
 # #### Distribution of number of violations given per day in Columbus
 
@@ -252,25 +261,25 @@ print(violations_by_day)
 
 violations_x_meters.head(12)
 
-fig, ax = ox.plot_graph(G, fig_height=15, show=False, close=False)
-ax.scatter(violations_x_meters['long_combined'], violations_x_meters['lat_combined'], alpha=0.5, c='red')
+_, ax_violations = ox.plot_graph(G, fig_height=15, show=False, close=False)
+ax_violations.scatter(violations_x_meters['long_combined'], violations_x_meters['lat_combined'], alpha=0.5, c='red')
 
 # +
-heat_tickets = violations_x_meters[(violations_x_meters['badge'] == '19') & \
+heat_tickets = violations_x_meters[(violations_x_meters['badge'] == '19') &
                                    (violations_x_meters['issue_date'] == '2014-02-13')] \
     .sort_values(by='iss time') \
-    [['Meter', 'lat_combined', 'long_combined']].dropna() \
- 
-heat_tickets.shape
+    [['Meter', 'lat_combined', 'long_combined']].dropna()
+
+print(heat_tickets.shape)
 
 # +
 # Would like to create a heat map for just this area
 bbox = ox.core.bbox_from_point((39.966358, -83.001397), 2500)
 north, south, east, west = bbox
 
-G_small = ox.graph_from_bbox(north, south, east, west,  simplify=True, retain_all=False)
-fig, ax = ox.plot_graph(G_small, fig_height=15, show=False, close=False)
-ax.scatter(heat_tickets['long_combined'], heat_tickets['lat_combined'], alpha=0.5, c='red')
+G_small = ox.graph_from_bbox(north, south, east, west, simplify=True, retain_all=False)
+_, ax_small_violations = ox.plot_graph(G_small, fig_height=15, show=False, close=False)
+ax_small_violations.scatter(heat_tickets['long_combined'], heat_tickets['lat_combined'], alpha=0.5, c='red')
 
 
 # +
@@ -290,8 +299,6 @@ __all__ = ['temperature_graph']
 import itertools
 
 from typing import Iterable, Optional, Union
-
-import networkx as nx
 
 
 def temperature_graph(
@@ -401,10 +408,9 @@ def _update_node_temperatures(G, nodes, heat_key, heat_increment, visited_nodes)
 
 # -
 
-# %time T = temperature_graph(G_small, heat_nodes(heat_tickets), heat_increments=1, depth_limit=10)
+T = temperature_graph(G_small, heat_nodes(heat_tickets), heat_increments=1, depth_limit=10)
 
 # +
-import networkx as nx
 
 nx.set_node_attributes(T, {node: data for node, data in G.nodes(data=True)})
 # -
@@ -430,6 +436,8 @@ map_heat_to_color = {
     20: "#8d2f00", 21: "#7a2900", 22: "#662200", 23: "#662200", 24: "#662200"}
 
 import math
+
+
 def heat_to_color(index, max_index):
     use_index = index
     if max_index >= len(map_heat_to_color):
@@ -438,14 +446,14 @@ def heat_to_color(index, max_index):
     return map_heat_to_color[use_index]
 
 
-
 # -
 
-# %time node_heat_colors = [heat_to_color(heat, max(heat_node_values)) for heat in heat_node_values]
-# %time edge_heat_colors = [heat_to_color(heat, max(heat_edge_values)) for heat in heat_edge_values]
+node_heat_colors = [heat_to_color(heat, max(heat_node_values)) for heat in heat_node_values]
+edge_heat_colors = [heat_to_color(heat, max(heat_edge_values)) for heat in heat_edge_values]
 print(len(node_heat_colors), len(edge_heat_colors))
 
-# %time ox.plot_graph(T, fig_height=15, show=False, close=False, node_color=node_heat_colors, edge_color=edge_heat_colors)
+# noinspection PyTypeChecker
+ox.plot_graph(T, fig_height=15, show=False, close=False, node_color=node_heat_colors, edge_color=edge_heat_colors)
 
 # ### Plot a route from two points on the graph
 
@@ -455,7 +463,7 @@ destination_point = (tickets[61:62].lat_combined.iloc[0], tickets[61:62].long_co
 
 origin_node = ox.get_nearest_node(G, origin_point)
 destination_node = ox.get_nearest_node(G, destination_point)
-origin_node, destination_node
+print(origin_node, destination_node)
 
 # +
 # The plan is to plot a route between every visited parking meter, ordered by time to see the most likely
@@ -469,11 +477,10 @@ G_small2 = ox.graph_from_bbox(north, south, east, west, network_type='drive', si
 
 route = nx.shortest_path(G_small2, origin_node, destination_node, weight='length')
 
-
 # when plotting a route from a bounded box it fails.. something gets extracted, but it works with full map
 # projected = ox.project_graph(G_small)
-fig, ax = ox.plot_graph_route(G_small2, route, origin_point=origin_point,
-                              destination_point=destination_point, fig_height=15, show=False, close=False)
+ox.plot_graph_route(G_small2, route, origin_point=origin_point,
+                    destination_point=destination_point, fig_height=15, show=False, close=False)
 
 # -
 
@@ -486,9 +493,7 @@ violations_for_day = violations_x_meters[violations_x_meters['issue_date'] == '2
 bbox = ox.core.bbox_from_point((39.977110, -83.003500), 4000)
 north, south, east, west = bbox
 G0 = ox.graph_from_bbox(north, south, east, west, network_type='drive_service')
-fig, ax = ox.plot_graph(G0, fig_height=15, show=False, close=False)
-
-import hashlib
+_, ax_day_violations = ox.plot_graph(G0, fig_height=15, show=False, close=False)
 
 
 def encode_badge(badge):
@@ -497,8 +502,8 @@ def encode_badge(badge):
 
 
 badge_to_colors = violations_for_day['badge'].map(encode_badge)
-ax.scatter(violations_for_day['long_combined'], violations_for_day['lat_combined'], \
-           alpha=0.5, c=badge_to_colors, marker='h')
+ax_day_violations.scatter(violations_for_day['long_combined'], violations_for_day['lat_combined'],
+                          alpha=0.5, c=badge_to_colors, marker='h')
 # -
 
 bbox = ox.core.bbox_from_point((39.977110, -83.003500), 500)
@@ -509,10 +514,10 @@ short_north_violations = violations_x_meters[(violations_x_meters['long_combined
                                              (violations_x_meters['lat_combined'] > south) &
                                              (violations_x_meters['year'] == 2017)
                                              ]
-short_north_violations.shape
+print(short_north_violations.shape)
 G1 = ox.graph_from_bbox(north, south, east, west, network_type='drive_service')
 
-short_north_violations.shape
+print(short_north_violations.shape)
 
 early_morning_violations = short_north_violations[(short_north_violations['iss time'] >= 500) & \
                                                   (short_north_violations['iss time'] < 700)]
@@ -530,16 +535,20 @@ night_violations = short_north_violations[(short_north_violations['iss time'] >=
 # #### Create bounding box 1 mile around the Forge, and plot violations around this area
 
 # +
-fig, ax = ox.plot_graph(G1, fig_height=10, show=False, close=False)
+_, ax_time_of_day = ox.plot_graph(G1, fig_height=10, show=False, close=False)
 # ax.scatter(violations_x_meters['long_combined'], violations_x_meters['lat_combined'], alpha=0.2, c='red')
 
 # ax.scatter(midday_violations['long_combined'], midday_violations['lat_combined'], alpha=0.1, c='green', marker="o")
-ax.scatter(morning_violations['long_combined'], morning_violations['lat_combined'], alpha=0.1, c='red', marker="^")
-ax.scatter(afternoon_violations['long_combined'], afternoon_violations['lat_combined'], alpha=0.1, c='brown')
-ax.scatter(evening_violations['long_combined'], evening_violations['lat_combined'], alpha=0.1, c='yellow', marker="v")
+ax_time_of_day.scatter(morning_violations['long_combined'], morning_violations['lat_combined'],
+                       alpha=0.1, c='red', marker="^")
+ax_time_of_day.scatter(afternoon_violations['long_combined'], afternoon_violations['lat_combined'],
+                       alpha=0.1, c='brown')
+ax_time_of_day.scatter(evening_violations['long_combined'], evening_violations['lat_combined'],
+                       alpha=0.1, c='yellow', marker="v")
 # ax.scatter(night_violations['long_combined'], night_violations['lat_combined'], alpha=0.4, c='gray')
 
-ax.scatter([-83.003500], [39.977110], c='blue')
+# this is the location of the Forge
+ax_time_of_day.scatter([-83.003500], [39.977110], c='blue')
 plt.tight_layout()
 
 # -
@@ -560,20 +569,18 @@ hot_meters = short_north_violations[violations_x_meters['Meter'].isin(hot_meter_
 # plot the route with folium
 route_map = ox.plot_graph_folium(G1, popup_attribute='name', edge_width=2)
 
-import folium
-
 folium.Marker(
     location=[39.977110, -83.003500],
     popup='The Forge',
     icon=folium.Icon(icon='glyphicon-scale', prefix='glyphicon')
 ).add_to(route_map)
 
-hot_meters.apply(lambda row: \
-                     folium.Marker(
-                         location=[row['lat_combined'], row['long_combined']],
-                         popup=grp.loc[row['Meter']][('amt_float', 'sum')],
-                         icon=folium.Icon(icon='scale', color='darkgreen')
-                     ).add_to(route_map),
+hot_meters.apply(lambda row:
+                 folium.Marker(
+                     location=[row['lat_combined'], row['long_combined']],
+                     popup=grp.loc[row['Meter']][('amt_float', 'sum')],
+                     icon=folium.Icon(icon='scale', color='darkgreen')
+                 ).add_to(route_map),
                  axis=1)
 
 # save to disk
@@ -581,8 +588,5 @@ filepath = 'data/graph.html'
 route_map.save(filepath)
 # -
 
-from IPython.display import IFrame
 
 IFrame(filepath, width=600, height=700)
-
-
